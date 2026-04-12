@@ -22,7 +22,8 @@
       "mcp__plugin_playwright_playwright__browser_press_key",
       "mcp__plugin_playwright_playwright__browser_tabs",
       "mcp__plugin_playwright_playwright__browser_close",
-      "Bash(bun run:*)"
+      "Bash(bun run:*)",
+      "Bash(/c/Users/Annak/.bun/bin/bun run:*)"
     ]
   },
   "sandbox": {
