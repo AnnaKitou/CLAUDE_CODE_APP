@@ -24,7 +24,10 @@
       "mcp__plugin_playwright_playwright__browser_close",
       "Bash(bun run:*)",
       "Bash(/c/Users/Annak/.bun/bin/bun run:*)",
-      "WebFetch(domain:better-auth.com)"
+      "WebFetch(domain:better-auth.com)",
+      "Bash(~/.bun/bin/bun x:*)",
+      "Bash(bun dev *)",
+      "Bash(curl -s http://localhost:3001)"
     ]
   },
   "sandbox": {
