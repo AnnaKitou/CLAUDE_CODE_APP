@@ -30,8 +30,14 @@
       "Bash(curl -s http://localhost:3001)",
       "Bash(curl -s http://localhost:3000/)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(npx tsc *.)",
+      "Bash(bunx playwright *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/sign-up/email -H \"Content-Type: application/json\" -d \"{\\\\\"name\\\\\":\\\\\"Test User\\\\\",\\\\\"email\\\\\":\\\\\"manual_test@example.com\\\\\",\\\\\"password\\\\\":\\\\\"TestPassword123!\\\\\"}\")"
     ]
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true
   },
   "sandbox": {
     "enabled": true,

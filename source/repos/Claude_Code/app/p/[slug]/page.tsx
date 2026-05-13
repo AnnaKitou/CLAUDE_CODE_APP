@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { getNoteByPublicSlug } from "@/lib/notes";
 import { RenderTiptapContent } from "@/components/RenderTiptapContent";
 import { formatRelativeTime } from "@/lib/format";
-import { authClient } from "@/lib/auth";
 
-export default async function PublicNotePage({ params }: { params: { slug: string } }) {
-  const note = await getNoteByPublicSlug(params.slug);
+export default async function PublicNotePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const note = await getNoteByPublicSlug(slug);
 
   if (!note) {
     notFound();

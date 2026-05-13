@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -13,6 +13,7 @@ interface NoteType {
   title: string;
   contentJson: string;
   isPublic: boolean;
+  publicSlug: string | null;
   updatedAt: string;
 }
 
@@ -24,8 +25,11 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(initialNote.title);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingShare, setIsTogglingShare] = useState(false);
+  const [isPublic, setIsPublic] = useState(initialNote.isPublic);
+  const [publicSlug, setPublicSlug] = useState<string | null>(initialNote.publicSlug);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -37,15 +41,7 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
     immediatelyRender: false,
   });
 
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function handleSave() {
     if (!editor) return;
 
     setIsSaving(true);
@@ -65,11 +61,35 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
         throw new Error('Failed to save note');
       }
 
-      setSuccess(true);
+      router.refresh();
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error saving note');
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleToggleSharing() {
+    setIsTogglingShare(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/notes/${initialNote.id}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ isPublic: !isPublic }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update sharing');
+
+      const updated = await response.json();
+      setIsPublic(updated.isPublic);
+      setPublicSlug(updated.publicSlug);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error updating sharing');
+    } finally {
+      setIsTogglingShare(false);
     }
   }
 
@@ -94,7 +114,7 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
           Title
@@ -121,21 +141,62 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
         </div>
       </div>
 
+      <div className="rounded-lg border border-gray-200 p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium text-gray-900 text-sm">Public sharing</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {isPublic ? 'Anyone with the link can view this note.' : 'Only you can see this note.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isPublic}
+            aria-label="Public sharing"
+            onClick={handleToggleSharing}
+            disabled={isTogglingShare}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isPublic ? 'bg-gray-900' : 'bg-gray-200'}`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${isPublic ? 'translate-x-5' : 'translate-x-0'}`}
+            />
+          </button>
+        </div>
+        {isPublic && publicSlug && (
+          <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2">
+            <span className="text-xs text-gray-600 truncate flex-1">
+              {typeof window !== 'undefined' ? `${window.location.origin}/p/${publicSlug}` : `/p/${publicSlug}`}
+            </span>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(`${window.location.origin}/p/${publicSlug}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                } catch {
+                  setError('Could not copy link — please copy it manually.');
+                }
+              }}
+              className="text-xs font-medium text-gray-700 hover:text-gray-900 flex-shrink-0"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        )}
+      </div>
+
       {error && (
         <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {success && (
-        <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-          Note saved successfully
-        </div>
-      )}
-
       <div className="flex gap-3">
         <button
-          type="submit"
+          type="button"
+          onClick={handleSave}
           disabled={isSaving}
           className="rounded-lg bg-gray-900 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -149,6 +210,6 @@ export function NoteEditor({ initialNote }: NoteEditorProps) {
           Delete
         </button>
       </div>
-    </form>
+    </div>
   );
 }
