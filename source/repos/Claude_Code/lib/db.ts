@@ -44,5 +44,5 @@ export function get<T>(sql: string, params: SQLQueryBindings[] = []): T | undefi
 }
 
 export function run(sql: string, params: SQLQueryBindings[] = []): void {
-  getDb().query<void, SQLQueryBindings[]>(sql).run(...params);
+  getDb().query(sql).run(...params);
 }

@@ -8,7 +8,7 @@ import Code from '@tiptap/extension-code';
 import CodeBlock from '@tiptap/extension-code-block';
 import { EditorToolbar } from './EditorToolbar';
 
-interface Note {
+interface NoteType {
   id: string;
   title: string;
   contentJson: string;
@@ -17,7 +17,7 @@ interface Note {
 }
 
 interface NoteEditorProps {
-  initialNote: Note;
+  initialNote: NoteType;
 }
 
 export function NoteEditor({ initialNote }: NoteEditorProps) {
