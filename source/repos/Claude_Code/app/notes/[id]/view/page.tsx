@@ -5,9 +5,10 @@ import { getNoteById } from "@/lib/notes";
 import { RenderTiptapContent } from "@/components/RenderTiptapContent";
 import { formatRelativeTime } from "@/lib/format";
 
-export default async function NoteViewPage({ params }: { params: { id: string } }) {
+export default async function NoteViewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await requireAuth();
-  const note = await getNoteById(session.user.id, params.id);
+  const note = await getNoteById(session.user.id, id);
 
   if (!note) {
     notFound();
