@@ -23,4 +23,4 @@ Carefully and thoroughly explore the codebase file-by-file to find potential iss
  
 Don't rush it, instead make sure you fully understand the code structure and architecture.
  
-Create a detailed report of all your findings.
+Create a detailed report of all your findings. 
